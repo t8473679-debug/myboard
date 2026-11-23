@@ -51,6 +51,31 @@ function makeDraggable(card){
     });
 }
 
+card.addEventListener('touchstart', (e) => {    //タッチ時用
+    isDragging = true;
+    const touch = e.touches[0];
+    offsetX = touch.clientX - card.offsetLeft;
+    offsetY = touch.clientY - card.offsetTop;
+});
+
+document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    card.style.left = (touch.clientX - offsetX) + 'px';
+    card.style.top = (touch.clientY - offsetY) + 'px';
+    sendData({
+        type: 'move',
+        cardId: card.id,
+        top: card.style.top,
+        left: card.style.left
+    });
+}, { passive: false });
+
+document.addEventListener('touchend', () => {
+    isDragging = false;
+});
+
 addBtn.addEventListener('click', () =>{
     const newCardId = 'card-' + Date.now();         //カードid作成
     createCardElement(newCardId);
