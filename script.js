@@ -2,23 +2,69 @@ const board = document.getElementById('board');
 const addBtn = document.getElementById('add-btn'); //要素取得
 const peerIdInput = document.getElementById('peer-id-input');
 const connectBtn = document.getElementById('connect-btn');
+const addImgBtn = document.getElementById('add-img-btn');
+const imgInput = document.getElementById('img-input');
 
 let conn = null;
 
-function createCardElement(cardId, top = '150px', left = '150px', text = '') {
+const colors = ['#fff9b1', '#ffd6e0', '#d0ebff', '#d3f9d8'];
+
+function createCardElement(cardId, top = '150px', left = '150px', text = '', color = colors, imgData = null) {
   const card = document.createElement('div');
   card.className = 'card';
-  card.id = cardId;                 //カードid
-  card.contentEditable = true;
+  card.id = cardId;
   card.style.top = top;
   card.style.left = left;
-  card.innerText = text;
+  card.style.backgroundColor = color;
 
-  card.addEventListener('input', () => {    //文字入力時
-    sendData({ type: 'edit', cardId: card.id, text: card.innerText });
-});
-makeDraggable(card);
-  board.appendChild(card);
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+
+  const colorBtn = document.createElement('button');
+  colorBtn.className = 'card-btn';
+  colorBtn.innerText = '⟲';
+  colorBtn.addEventListener('click', () => {
+    const currentIndex = colors.indexOf(card.dataset.color || colors[0]);
+    const nextColor = colors[(currentIndex + 1) % colors.length];
+
+    card.style.backgroundColor = nextColor;
+    card.dataset.color = nextColor;
+    sendData({ type: 'color', cardId: card.id, color: nextColor }); // 相手にも送る
+  });
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'card-btn';
+  deleteBtn.innerText = '×';
+  deleteBtn.addEventListener('click', () => {
+        card.remove();
+        sendData({ type: 'delete', cardId: card.id });
+    });
+
+    actions.appendChild(colorBtn);
+    actions.appendChild(deleteBtn);
+
+    const textArea = document.createElement('div');
+    textArea.className = 'card-text';
+    textArea.contentEditable = true;
+    textArea.innerText = text;
+
+    textArea.addEventListener('input', () => {
+        sendData({ type: 'edit', cardId: card.id, text: textArea.innerText });
+    });
+
+    card.appendChild(actions);
+
+    if (imgData) {
+    const img = document.createElement('img');
+    img.src = imgData;
+    img.className = 'card-img';
+    card.appendChild(img);
+    textArea.style.minHeight = '30px';
+    }
+    card.appendChild(textArea);
+
+    makeDraggable(card);
+    board.appendChild(card);
 }
 
 function makeDraggable(card){
@@ -49,7 +95,6 @@ function makeDraggable(card){
         isDragging = false;
         card.style.cursor = 'grab';
     });
-}
 
 card.addEventListener('touchstart', (e) => {    //タッチ時用
     isDragging = true;
@@ -75,12 +120,42 @@ document.addEventListener('touchmove', (e) => {
 document.addEventListener('touchend', () => {
     isDragging = false;
 });
-
+}
 addBtn.addEventListener('click', () =>{
     const newCardId = 'card-' + Date.now();         //カードid作成
     createCardElement(newCardId);
     sendData({ type: 'add', cardId: newCardId });
 });
+
+addImgBtn.addEventListener('click', () => {
+    imgInput.click();
+});
+
+imgInput.addEventListener('change', (e) => {
+  const file = e.target.files;
+  if (!file) return;
+   const reader = new FileReader();
+   reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+      const maxWidth = 400;
+      const scale = Math.min(1, maxWidth / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const resizedData = canvas.toDataURL('image/jpeg', 0.7);
+
+      const newCardId = 'card-' + Date.now();
+      createCardElement(newCardId, '150px', '150px', '', colors, resizedData);
+      sendData({ type: 'add-img', cardId: newCardId, imgData: resizedData });
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+  imgInput.value = '';
+  });
 
 //id取得↓ 
 const myIdDisplay = document.getElementById('my-id');
@@ -125,8 +200,21 @@ function setupConnection() {                    //データ受け取った時
     } else if (data.type === 'edit') {
       const targetCard = document.getElementById(data.cardId);
       if (targetCard) {
-        targetCard.innerText = data.text;
+        targetCard.querySelector('.card-text').innerText = data.text;
       }
+    }else if (data.type === 'color') {
+      const targetCard = document.getElementById(data.cardId);
+      if (targetCard) {
+        targetCard.style.backgroundColor = data.color;
+        targetCard.dataset.color = data.color;
+      }
+    } else if (data.type === 'delete') {
+      const targetCard = document.getElementById(data.cardId);
+      if (targetCard) {
+        targetCard.remove();
+      }
+    }else if (data.type === 'add-img') {
+      createCardElement(data.cardId, '150px', '150px', '', colors, data.imgData);
     }
   });
 }

@@ -36,3 +36,43 @@ body{
     }
     touch-action: none;
 }
+
+.card-text{
+    margin-top: 15px;
+    outline: none;
+    min-height: 90px;
+}
+
+.card-actions {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.card-btn {
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+#add-img-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card-img {
+  width: 100%;
+  border-radius: 4px;
+  margin-top: 18px;
+  pointer-events: none;
+}
