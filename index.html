@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div id="controls">
+        <button id="add-btn">+ カードを追加</button>
+
+        <div id="connection-box">       <!-- id表示 -->
+            <span>自分のID: <strong id="my-id">取得中...</strong></span>
+            <input type="text" id="peer-id-input" placeholder="相手のIDを入力">
+            <button id="connect-btn">接続</button>
+        </div>
+    </div>
+    <div id="board"></div>
+
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
