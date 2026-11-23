@@ -132,7 +132,7 @@ addImgBtn.addEventListener('click', () => {
 });
 
 imgInput.addEventListener('change', (e) => {
-  const file = e.target.files;
+  const file = e.target.files[0];
   if (!file) return;
    const reader = new FileReader();
    reader.onload = (event) => {
@@ -150,11 +150,11 @@ imgInput.addEventListener('change', (e) => {
       const newCardId = 'card-' + Date.now();
       createCardElement(newCardId, '150px', '150px', '', colors, resizedData);
       sendData({ type: 'add-img', cardId: newCardId, imgData: resizedData });
+      imgInput.value = '';
     };
     img.src = event.target.result;
   };
   reader.readAsDataURL(file);
-  imgInput.value = '';
   });
 
 //id取得↓ 
